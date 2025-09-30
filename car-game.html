@@ -1,0 +1,111 @@
+   </div>
+
+  <!-- Game Section -->
+  <h2>🚗 Play My Car Race Game!</h2>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+
+  <!-- Mobile Controls -->
+  <div id="leftBtn" class="btn">◀</div>
+  <div id="rightBtn" class="btn">▶</div>
+
+  <script>
+    // Game Variables
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const carWidth = 50;
+    const carHeight = 100;
+    let carX = canvas.width / 2 - carWidth / 2;
+    let carY = canvas.height - carHeight - 10;
+    let speed = 5;
+    let score = 0;
+
+    let moveLeft = false;
+    let moveRight = false;
+
+    // Touch buttons
+    document.getElementById("leftBtn").addEventListener("touchstart", () => moveLeft = true);
+    document.getElementById("leftBtn").addEventListener("touchend", () => moveLeft = false);
+    document.getElementById("rightBtn").addEventListener("touchstart", () => moveRight = true);
+    document.getElementById("rightBtn").addEventListener("touchend", () => moveRight = false);
+
+    // Obstacle class
+    class Obstacle {
+      constructor(x, y, width, height, color) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.color = color;
+      }
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
+      }
+      update() {
+        this.y += speed;
+        if (this.y > canvas.height) {
+          this.y = -this.height;
+          this.x = Math.random() * (canvas.width - this.width);
+          score++;
+          if (score % 5 === 0) speed += 0.5; // Speed increases every 5 points
+        }
+        this.draw();
+      }
+    }
+
+    // Obstacles array
+    let obstacles = [];
+    for (let i = 0; i < 3; i++) {
+      obstacles.push(new Obstacle(Math.random() * (canvas.width - 50), -150 * i, 50, 100, "red"));
+    }
+
+    // Draw car
+    function drawCar() {
+      ctx.fillStyle = "cyan";
+      ctx.fillRect(carX, carY, carWidth, carHeight);
+    }
+
+    // Draw score
+    function drawScore() {
+      ctx.fillStyle = "#fff";
+      ctx.font = "24px Arial";
+      ctx.fillText("Score: " + score, 10, 30);
+    }
+
+    // Collision detection
+    function detectCollision(obs) {
+      return (
+        carX < obs.x + obs.width &&
+        carX + carWidth > obs.x &&
+        carY < obs.y + obs.height &&
+        carY + carHeight > obs.y
+      );
+    }
+
+    // Game loop
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Car movement
+      if (moveLeft && carX > 0) carX -= 7;
+      if (moveRight && carX < canvas.width - carWidth) carX += 7;
+
+      drawCar();
+      drawScore();
+
+      for (let obs of obstacles) {
+        obs.update();
+        if (detectCollision(obs)) {
+          alert("Game Over! Your Score: " + score);
+          document.location.reload();
+        }
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
+</body>
+</html>
